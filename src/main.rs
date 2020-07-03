@@ -39,7 +39,6 @@ fn action_for_mail(mail: &[u8]) -> Result<MailingListAction, MailParseError> {
         .headers
         .iter()
         .find(|&h| &h.get_key().to_lowercase() == "subject");
-  
     // If command
     //      Handle command
     // Else if list allows outside posting or sender is member of list
@@ -62,6 +61,7 @@ fn action_for_mail(mail: &[u8]) -> Result<MailingListAction, MailParseError> {
 #[cfg(test)]
 mod test {
     use super::{action_for_mail, MailingListAction};
+    use mailparse::MailParseError;
 
     #[test]
     fn a_basic_parse() {
@@ -90,13 +90,24 @@ mod test {
     }
 
     #[test]
-    fn a_bad_email() {
+    fn a_message_to_pass_through() {
+        let message = "From: test@example.org\r\nSubject: A message to the list\r\n\r\n".as_bytes();
+
         assert_eq!(
-            format!(
-                "{:?}",
-                action_for_mail("bad input\r\n".as_bytes()).unwrap_err()
-            ),
-            "Generic(\"Unexpected newline in header key\")"
+            action_for_mail(message)
+                .unwrap(),
+            MailingListAction::Message(message)
         );
+    }
+
+    #[test]
+    fn a_bad_email() {
+        if let MailParseError::Generic(msg) =
+            action_for_mail("bad input\r\n".as_bytes()).unwrap_err()
+        {
+            assert_eq!(msg, "Unexpected newline in header key")
+        } else {
+            panic!()
+        }
     }
 }
