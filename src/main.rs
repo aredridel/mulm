@@ -1,9 +1,10 @@
-use mailparse::{parse_mail, MailHeaderMap, MailParseError};
+use mailparse::{parse_mail, MailHeaderMap};
+use std::error::Error;
 use std::env::args;
 use std::io::{self, Read};
-use config::List;
+use list::List;
 
-mod config;
+mod list;
 
 #[derive(Debug, Eq, PartialEq)]
 enum MailingListAction<'a> {
@@ -13,7 +14,7 @@ enum MailingListAction<'a> {
     Reject,
 }
 
-fn main() -> Result<(), std::io::Error> {
+fn main() -> Result<(), Box<dyn Error>> {
     let stdin = io::stdin();
     let mut rh = stdin.lock();
 
@@ -30,22 +31,20 @@ fn main() -> Result<(), std::io::Error> {
     Ok(())
 }
 
-fn handle(mail: &[u8], list: List) -> Result<(), MailParseError> {
+fn handle(mail: &[u8], list: List) -> Result<(), Box<dyn Error>> {
     let action = action_for_mail(mail)?;
 
     println!("{:?} {:?}", action, list);
 
     match action {
-        MailingListAction::Subscribe(_email) => (),
-        MailingListAction::Unsubscribe(_email) => (),
-        MailingListAction::Message(_message) => (),
-        MailingListAction::Reject => (),
+        MailingListAction::Subscribe(address) => list.subscribe(address),
+        MailingListAction::Unsubscribe(_email) => Ok(()),
+        MailingListAction::Message(_message) => Ok( ()),
+        MailingListAction::Reject => Ok(()),
     }
-
-    return Ok(());
 }
 
-fn action_for_mail(mail: &[u8]) -> Result<MailingListAction, MailParseError> {
+fn action_for_mail(mail: &[u8]) -> Result<MailingListAction, Box<dyn Error>> {
     let mail_rec = parse_mail(mail)?;
     let from = mail_rec.headers.get_first_value("from");
 
@@ -63,13 +62,12 @@ fn action_for_mail(mail: &[u8]) -> Result<MailingListAction, MailParseError> {
         }
     }
 
-    return Ok(MailingListAction::Message(mail));
+    Ok(MailingListAction::Message(mail))
 }
 
 #[cfg(test)]
 mod test {
     use super::{action_for_mail, MailingListAction};
-    use mailparse::MailParseError;
 
     #[test]
     fn a_basic_parse() {
@@ -107,10 +105,7 @@ mod test {
 
     #[test]
     fn a_bad_email() {
-        if let MailParseError::Generic(msg) = action_for_mail(b"bad input\r\n").unwrap_err() {
-            assert_eq!(msg, "Unexpected newline in header key")
-        } else {
-            panic!()
-        }
+        let error = action_for_mail(b"bad input\r\n").unwrap_err();
+        assert_eq!(error.to_string(), "Unexpected newline in header key")
     }
 }
