@@ -2,17 +2,9 @@ use mailparse::{parse_mail, MailHeaderMap};
 use std::error::Error;
 use std::env::args;
 use std::io::{self, Read};
-use list::List;
+use list::{List, MailingListAction};
 
 mod list;
-
-#[derive(Debug, Eq, PartialEq)]
-enum MailingListAction<'a> {
-    Subscribe(String),
-    Unsubscribe(String),
-    Message(&'a [u8]),
-    Reject,
-}
 
 fn main() -> Result<(), Box<dyn Error>> {
     let stdin = io::stdin();
@@ -23,7 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if let Some(list) = args().nth(1) {
         let list: List = List::load(list)?;
-        handle(buffer.as_slice(), list).unwrap();
+        handle(buffer.as_slice(), list)?;
     } else {
         panic!("No list given");
     }
@@ -38,8 +30,8 @@ fn handle(mail: &[u8], list: List) -> Result<(), Box<dyn Error>> {
 
     match action {
         MailingListAction::Subscribe(address) => list.subscribe(address),
-        MailingListAction::Unsubscribe(_email) => Ok(()),
-        MailingListAction::Message(_message) => Ok( ()),
+        MailingListAction::Unsubscribe(address) => list.unsubscribe(address),
+        MailingListAction::Message(message) => list.send(message),
         MailingListAction::Reject => Ok(()),
     }
 }

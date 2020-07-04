@@ -6,6 +6,14 @@ use std::path::Path;
 use std::io::prelude::*;
 use toml;
 
+#[derive(Debug, Eq, PartialEq)]
+pub enum MailingListAction<'a> {
+    Subscribe(String),
+    Unsubscribe(String),
+    Message(&'a [u8]),
+    Reject,
+}
+
 #[derive(Deserialize, Debug)]
 pub struct List {
     config: Config
