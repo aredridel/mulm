@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 mailparse = "^0.12.1"
+fs2 = "^0.4.2"
 
 [profile.release]
 opt-level = "z"
