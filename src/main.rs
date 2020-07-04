@@ -1,6 +1,9 @@
 use mailparse::{parse_mail, MailHeaderMap, MailParseError};
-use std::io::{self, Read};
 use std::env::args;
+use std::io::{self, Read};
+use config::List;
+
+mod config;
 
 #[derive(Debug, Eq, PartialEq)]
 enum MailingListAction<'a> {
@@ -10,21 +13,24 @@ enum MailingListAction<'a> {
     Reject,
 }
 
-fn main() {
+fn main() -> Result<(), std::io::Error> {
     let stdin = io::stdin();
     let mut rh = stdin.lock();
 
     let mut buffer = Vec::new();
-    rh.read_to_end(&mut buffer).unwrap();
+    rh.read_to_end(&mut buffer)?;
 
     if let Some(list) = args().nth(1) {
+        let list: List = List::load(list)?;
         handle(buffer.as_slice(), list).unwrap();
     } else {
         panic!("No list given");
     }
+
+    Ok(())
 }
 
-fn handle(mail: &[u8], list: String) -> Result<(), MailParseError> {
+fn handle(mail: &[u8], list: List) -> Result<(), MailParseError> {
     let action = action_for_mail(mail)?;
 
     println!("{:?} {:?}", action, list);
