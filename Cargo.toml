@@ -8,3 +8,10 @@ edition = "2018"
 
 [dependencies]
 mailparse = "^0.12.1"
+
+[profile.release]
+opt-level = "z"
+lto = true
+debug = false
+codegen-units = 1
+incremental = false
