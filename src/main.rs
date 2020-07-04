@@ -26,8 +26,8 @@ fn handle(mail: &[u8]) -> Result<(), MailParseError> {
     match action {
         MailingListAction::Subscribe(_email) => (),
         MailingListAction::Unsubscribe(_email) => (),
-        MailingListAction::Reject => (),
         MailingListAction::Message(_message) => (),
+        MailingListAction::Reject => (),
     }
 
     return Ok(());
