@@ -1,8 +1,8 @@
-use mailparse::{parse_mail, MailHeaderMap};
-use std::error::Error;
-use std::env::args;
-use std::io::{self, Read};
 use list::{List, MailingListAction};
+use mailparse::{parse_mail, MailHeaderMap};
+use std::env::args;
+use std::error::Error;
+use std::io::{self, Read};
 
 mod list;
 
