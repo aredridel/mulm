@@ -51,10 +51,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "gethostname"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e692e296bfac1d2533ef168d0b60ff5897b8b70a4009276834014dd8924cc028"
+dependencies = [
+ "libc",
+ "winapi",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.71"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9457b06509d27052635f90d6466700c65095fdf75409b3fbdd903e988b886f49"
+
+[[package]]
+name = "maildir"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04d4ce9c1a5736d56fbdbd94a60984fbede764e8a184038822f98bc1e7f8ab67"
+dependencies = [
+ "gethostname",
+ "mailparse",
+]
 
 [[package]]
 name = "mailparse"
@@ -71,7 +91,9 @@ dependencies = [
 name = "mulm"
 version = "0.1.0"
 dependencies = [
+ "byteorder",
  "fs2",
+ "maildir",
  "mailparse",
  "serde",
  "toml",
