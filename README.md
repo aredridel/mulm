@@ -55,6 +55,18 @@ file for unsubscribes.
 
 ## Future work
 
+- Adding the list slug to the subject line
+  - Perhaps rewrite to use mailparse's types internally rather than a `&[u8]`
+    for the message.
+- Censoring originating headers for privacy
+- Masking email addresses entirely
+- Welcome messages
 - VERP for bounce detection
+  - It still has to work with a single line in `/etc/mail/aliases` though so
+    perhaps it's time to move to `+` addresses rather than anything more complex.
 - A moderation queue
+  - Joins
+  - Posting
 - A web interface
+  - Should be a separate project really.
+- A command line for subscribing and unsubscribing people
