@@ -55,9 +55,11 @@ file for unsubscribes.
 
 ## Future work
 
+- Perhaps rewrite to use mailparse's types internally rather than a `&[u8]`
+  for the message.
 - Adding the list slug to the subject line
-  - Perhaps rewrite to use mailparse's types internally rather than a `&[u8]`
-    for the message.
+- Add list management headers
+- Parsing HTML parts and reducing them to simple markup only
 - Censoring originating headers for privacy
 - Masking email addresses entirely
 - Welcome messages
