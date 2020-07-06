@@ -1,6 +1,8 @@
 [package]
 name = "mulm"
-version = "0.1.0"
+description = "A small mailing list manager for tiny community groups"
+license = "L0-Prosperity"
+version = "1.0.0-0"
 authors = ["Aria Stewart <aredridel@dinhe.net>"]
 edition = "2018"
 
