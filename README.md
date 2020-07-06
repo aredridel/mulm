@@ -1,6 +1,11 @@
 # mulm, a tiny mailing list manager
 
+Free for noncommercial use. For commercial use [buy a
+license](https://licensezero.com/offers/556b44a4-315f-434b-972f-0dfb485f32ec)
+
 ## Quick Start
+
+Install this package with `cargo install mulm --root /usr/local`. Then
 
 `mkdir /path/to/list/store.list`
 
@@ -12,13 +17,21 @@ name = "A List"
 slug = "listname"
 ```
 
-In your MTA's aliases file, add `listname: /path/to/mulm /path/to/list/store.list`
+In your MTA's aliases file, add `listname: |/usr/local/bin/mulm /path/to/list/store.list`
+
+Send mail to `listname@yourdomain` to post; use the subject line "subscribe" to
+subscribe, and "unsubscribe" to remove yourself from the list.
 
 ## Features
 
 - in-band commands: we honor unsubscribe and subscribe sent to list address.
 - resumable sending if interrupted
 - archives all messages to a group of mboxes
+
+## Current Status
+
+No privacy, it works but it's super simple. It's best used for groups that
+trust each other.
 
 ## Configuration
 
@@ -53,6 +66,13 @@ as delivered to the maildir.
 The recipient lists are appended to for subscriptions, and rewritten as a new
 file for unsubscribes.
 
+## Licensing
+
+This code is licensed under [License Zero
+Prosperity](https://prosperitylicense.com/). It is not free software! However,
+it is available for noncommercial use without payment, and contributions are
+welcome. See below.
+
 ## Future work
 
 - Perhaps rewrite to use mailparse's types internally rather than a `&[u8]`
@@ -72,3 +92,8 @@ file for unsubscribes.
 - A web interface
   - Should be a separate project really.
 - A command line for subscribing and unsubscribing people
+
+If you'd like to work on any of these, feel free. Talk to me and we can discuss
+payment. You don't need to be super experienced — this is my first Rust
+project, and a learning one. Some of those things above are pretty simple if
+you want to take a stab at it.
