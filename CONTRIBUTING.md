@@ -1,3 +1,5 @@
+# Contributing
+
 So if you contribute to this software, I'd love to pay you — probably not a
 lot as this is a labor of love and is extremely unlikely to employ someone to
 work on it. I don't actually want it to. This is small software. However,
@@ -28,3 +30,24 @@ together we can make it all less bad.
 I'm open to contributions other than the things in the future work section of
 [the README file](README.md), but those are things I can think of now that have
 some relatively obvious value.
+
+## Technical approach
+
+I've been testing things on the command line as I work.
+
+You can test the subscribe command with `cargo run test-data/test.list <
+test-data/subscribe.mail`
+
+You can test the unsubscribe command with `cargo run test-data/test.list <
+test-data/unsubscribe.mail`
+
+You can test sending a message to the list with `cargo run test-data/test.list
+< test-data/test.mail` — on a Mac laptop, you can see the bounce message with
+the `mail` command in your terminal. Old school unix stuff, but it works.
+
+You can test invalid input with `cargo run test-data/test.list <
+test-data/bad.mail`
+
+And as always, `cargo test` runs the unit tests.
+
+
