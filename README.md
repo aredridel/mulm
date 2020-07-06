@@ -75,6 +75,7 @@ welcome. See below.
 
 ## Future work
 
+- More complete unit tests
 - Perhaps rewrite to use mailparse's types internally rather than a `&[u8]`
   for the message.
 - Adding the list slug to the subject line
