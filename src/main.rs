@@ -4,7 +4,9 @@ use std::env::args;
 use std::error::Error;
 use std::io::{self, Read};
 
+mod err;
 mod list;
+mod send;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let stdin = io::stdin();
@@ -25,8 +27,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn handle(mail: &[u8], list: List) -> Result<(), Box<dyn Error>> {
     let action = action_for_mail(mail)?;
-
-    println!("{:?} {:?}", action, list);
 
     match action {
         MailingListAction::Subscribe(address) => list.subscribe(address),

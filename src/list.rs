@@ -1,4 +1,6 @@
 use byteorder::{BigEndian, WriteBytesExt, ReadBytesExt};
+use crate::err::ListError;
+use crate::send::send;
 use fs2::FileExt;
 use maildir::Maildir;
 use mailparse::{addrparse, MailAddr, SingleInfo};
@@ -37,18 +39,6 @@ pub struct Config {
     open_posting: Option<bool>,
 }
 
-#[derive(Debug)]
-pub struct ListError {
-    message: String,
-}
-
-impl Error for ListError {}
-
-impl fmt::Display for ListError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.message)
-    }
-}
 
 impl std::fmt::Debug for List {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -206,14 +196,15 @@ impl List {
         dest_list.seek(std::io::SeekFrom::Start(curr_pos))?;
 
         let message_file = self.maildir.path().join("queue").join(format!("{}.eml", id));
+        let mut message = vec!();
+        File::open(&message_file)?.read_to_end(&mut message)?;
 
         while curr_pos < end {
             let mut buf = String::new();
             let incr:u64 = dest_list.read_line(&mut buf)?.try_into().unwrap();
             curr_pos += incr;
 
-            // TODO: Send message
-            println!("Would have sent the message to {}!", buf.trim());
+            send(None, &[buf.trim()], &message)?;
 
             pos.seek(std::io::SeekFrom::Start(curr_pos))?;
             pos.write_u64::<BigEndian>(curr_pos)?;
