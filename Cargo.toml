@@ -3,7 +3,8 @@ name = "mulm"
 description = "A small mailing list manager for tiny community groups"
 repository = "https://github.com/aredridel/mulm"
 license-file = "LICENSE.md"
-version = "1.0.0"
+readme = "README.md"
+version = "1.0.1"
 authors = ["Aria Stewart <aredridel@dinhe.net>"]
 edition = "2018"
 
