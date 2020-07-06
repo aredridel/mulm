@@ -9,7 +9,6 @@ use std::fmt;
 use std::fs::{hard_link, metadata, rename, DirBuilder, File, OpenOptions};
 use std::io::prelude::*;
 use std::io::{BufRead, BufReader, ErrorKind};
-use std::mem::size_of;
 use std::path::Path;
 use toml;
 
@@ -172,8 +171,8 @@ impl List {
             .create_new(true)
             .write(true)
             .open(stat_filename)?;
-        pos.write_u64::<BigEndian>(stat.len())?;
         pos.write_u64::<BigEndian>(0)?;
+        pos.write_u64::<BigEndian>(stat.len())?;
 
         subscriptions.unlock()?;
 
@@ -195,16 +194,12 @@ impl List {
 
         // Confirm the file is still here: if another process handled it, it will vanish before
         // being unlocked, so we'll end up here.
-        if let Err(err) = metadata(&pos_file) {
-            if err.kind() == ErrorKind::NotFound {
-                return Ok(());
-            } else {
-                return Err(Box::new(err));
-            }
+        if !pos_file.exists() {
+            return Ok(());
         }
 
-        let end = pos.read_u64::<BigEndian>()?;
         let mut curr_pos = pos.read_u64::<BigEndian>()?;
+        let end = pos.read_u64::<BigEndian>()?;
 
         let dest_list_file = self.maildir.path().join("queue").join(format!("{}.dest", id));
         let mut dest_list = BufReader::new(File::open(&dest_list_file)?);
@@ -220,7 +215,7 @@ impl List {
             // TODO: Send message
             println!("Would have sent the message to {}!", buf.trim());
 
-            pos.seek(std::io::SeekFrom::Start(size_of::<u64>().try_into().unwrap()))?;
+            pos.seek(std::io::SeekFrom::Start(curr_pos))?;
             pos.write_u64::<BigEndian>(curr_pos)?;
             pos.sync_data()?;
         }
