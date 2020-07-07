@@ -1,7 +1,7 @@
+use mailparse::{addrparse, MailAddr};
+use std::error::Error;
 use std::io::{Read, Write};
 use std::process::{Command, Stdio};
-
-use std::error::Error;
 
 use crate::err::ListError;
 
@@ -13,10 +13,23 @@ pub fn send(from: Option<&str>, to: &[&str], message: &[u8]) -> Result<(), Box<d
         .stdout(Stdio::piped());
 
     if let Some(from) = from {
-        process.arg("-f").arg(from);
+        let parsed = addrparse(&from)?;
+        let addr = &match parsed.first().unwrap() {
+            MailAddr::Single(addr) => Ok(addr),
+            MailAddr::Group(_) => Err(Box::new(ListError { message: format!("{:?} is not a valid from address", from)}))
+        }?.addr;
+        process.arg("-f").arg(addr);
     }
 
     for recip in to {
+        for addr in addrparse(recip)?.to_vec() {
+            match addr {
+                MailAddr::Single(addr) => { process.arg(addr.addr); },
+                MailAddr::Group(group) => for addr in group.addrs {
+                    process.arg(addr.addr);
+                }
+            }
+        };
         process.arg(recip);
     }
 
