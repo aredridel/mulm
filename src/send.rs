@@ -17,8 +17,8 @@ pub fn send(from: Option<&str>, to: &[&str], message: &[u8]) -> Result<(), Box<d
         let addr = &match parsed.first().unwrap() {
             MailAddr::Single(addr) => Ok(addr),
             MailAddr::Group(_) => Err(Box::new(ListError { message: format!("{:?} is not a valid from address", from)}))
-        }?.addr;
-        process.arg("-f").arg(addr);
+        }?;
+        process.arg("-f").arg(&addr.addr);
     }
 
     for recip in to {
@@ -30,7 +30,6 @@ pub fn send(from: Option<&str>, to: &[&str], message: &[u8]) -> Result<(), Box<d
                 }
             }
         };
-        process.arg(recip);
     }
 
     let child = process.spawn().map_err(|why| {
