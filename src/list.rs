@@ -167,7 +167,7 @@ impl List {
         subscriptions.unlock()?;
 
         // TODO Spawn send process and pass it the list directory and {id}
-        println!("Would have started send process here, running inline for now");
+        // println!("Would have started send process here, running inline for now");
         self.do_send(&id)?;
 
         Ok(())
