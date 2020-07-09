@@ -1,6 +1,6 @@
-use byteorder::{BigEndian, WriteBytesExt, ReadBytesExt};
 use crate::err::ListError;
 use crate::send::send;
+use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use fs2::FileExt;
 use maildir::Maildir;
 use mailparse::{addrparse, MailAddr, SingleInfo};
@@ -38,7 +38,6 @@ pub struct Config {
     slug: String,
     open_posting: Option<bool>,
 }
-
 
 impl std::fmt::Debug for List {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -127,9 +126,23 @@ impl List {
         Ok(())
     }
 
-    pub fn send(&self, message: &[u8]) -> Result<(), Box<dyn Error>> {
+    pub fn send(&self, message_buf: &[u8]) -> Result<(), Box<dyn Error>> {
         self.maildir.create_dirs()?;
-        let id = self.maildir.store_new(message)?;
+
+        let message = mailparse::parse_mail(message_buf)?;
+
+        let mut buf: Vec<u8> = Vec::new();
+
+        for header in &message.headers {
+            buf.write_all(header.get_key_raw())?;
+            buf.write_all(b": ")?;
+            buf.write_all(header.get_value_raw())?;
+            buf.write_all(b"\r\n")?;
+        }
+        buf.write_all(b"\r\n")?;
+        buf.write_all(&message.get_body_raw()?)?;
+
+        let id = self.maildir.store_new(&buf)?;
 
         DirBuilder::new()
             .recursive(true)
@@ -191,17 +204,25 @@ impl List {
         let mut curr_pos = pos.read_u64::<BigEndian>()?;
         let end = pos.read_u64::<BigEndian>()?;
 
-        let dest_list_file = self.maildir.path().join("queue").join(format!("{}.dest", id));
+        let dest_list_file = self
+            .maildir
+            .path()
+            .join("queue")
+            .join(format!("{}.dest", id));
         let mut dest_list = BufReader::new(File::open(&dest_list_file)?);
         dest_list.seek(std::io::SeekFrom::Start(curr_pos))?;
 
-        let message_file = self.maildir.path().join("queue").join(format!("{}.eml", id));
-        let mut message = vec!();
+        let message_file = self
+            .maildir
+            .path()
+            .join("queue")
+            .join(format!("{}.eml", id));
+        let mut message = vec![];
         File::open(&message_file)?.read_to_end(&mut message)?;
 
         while curr_pos < end {
             let mut buf = String::new();
-            let incr:u64 = dest_list.read_line(&mut buf)?.try_into().unwrap();
+            let incr: u64 = dest_list.read_line(&mut buf)?.try_into().unwrap();
             curr_pos += incr;
 
             send(None, &[buf.trim()], &message)?;
