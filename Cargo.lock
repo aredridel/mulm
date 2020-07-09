@@ -10,6 +10,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "base64"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3441f0f7b02788e948e47f457ca01f1d7e6d92c693bc132c22b087d3141c03ff"
+
+[[package]]
 name = "byteorder"
 version = "1.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -27,7 +33,7 @@ version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4f426e64df1c3de26cbf44593c6ffff5dbfd43bbf9de0d075058558126b3fc73"
 dependencies = [
- "base64",
+ "base64 0.10.1",
  "encoding_rs",
 ]
 
@@ -78,11 +84,11 @@ dependencies = [
 
 [[package]]
 name = "mailparse"
-version = "0.12.1"
+version = "0.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6435afa64615b3c3efa09cb4066f42dcd236902f30ab48acd36ea59821bb4e0"
+checksum = "336d59e50513349423fa89bdadef5b5c49972a6ce0b66d3b2c7c8b7ab3969faf"
 dependencies = [
- "base64",
+ "base64 0.12.3",
  "charset",
  "quoted_printable",
 ]
