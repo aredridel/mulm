@@ -1,3 +1,4 @@
 [config]
 slug = "test"
 name = "A Test List"
+tag_subject = true

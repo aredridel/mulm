@@ -39,7 +39,9 @@ trust each other.
 - `config.slug` — an identifier for the list, ideally the local part of the
   address. A string, required.
 - `config.open_posting` — whether or not posters must be a member of the list.
-  Boolean, optional.
+  Boolean, optional, Default false.
+- `config.tag_subject` - whether to add `[list slug]` to the subject of
+  messages. Boolean, optional. Default false.
 
 ## Internal Design
 
@@ -76,9 +78,6 @@ welcome. See below.
 ## Future work
 
 - More complete unit tests
-- Perhaps rewrite to use mailparse's types internally rather than a `&[u8]`
-  for the message.
-- Adding the list slug to the subject line
 - Add list management headers
 - Parsing HTML parts and reducing them to simple markup only
 - Censoring originating headers for privacy
