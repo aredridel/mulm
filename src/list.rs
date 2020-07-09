@@ -168,12 +168,12 @@ impl List {
 
         // TODO Spawn send process and pass it the list directory and {id}
         // println!("Would have started send process here, running inline for now");
-        self.do_send(&id)?;
+        self.dequeue_and_send_message(&id)?;
 
         Ok(())
     }
 
-    fn do_send(&self, id: &str) -> Result<(), Box<dyn Error>> {
+    fn dequeue_and_send_message(&self, id: &str) -> Result<(), Box<dyn Error>> {
         let pos_file = self
             .maildir
             .path()
