@@ -37,7 +37,7 @@ pub struct Config {
     name: String,
     slug: String,
     open_posting: Option<bool>,
-    tag_subject: Option<bool>
+    tag_subject: Option<bool>,
 }
 
 impl std::fmt::Debug for List {
@@ -137,7 +137,9 @@ impl List {
         for header in &message.headers {
             buf.write_all(header.get_key_raw())?;
             buf.write_all(b": ")?;
-            if self.config.tag_subject.unwrap_or(false) && header.get_key().eq_ignore_ascii_case("subject"){
+            if self.config.tag_subject.unwrap_or(false)
+                && header.get_key().eq_ignore_ascii_case("subject")
+            {
                 write!(buf, "[{}] ", self.config.slug)?;
             }
             buf.write_all(header.get_value_raw())?;
@@ -267,4 +269,3 @@ fn not_found_is_fine(r: Result<(), std::io::Error>) -> Result<(), Box<dyn Error>
         return Ok(());
     }
 }
-
