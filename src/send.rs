@@ -1,12 +1,12 @@
 use mailparse::{addrparse, MailAddr};
 use std::error::Error;
-use std::io::{Read, Write};
 use std::process::{Command, Stdio};
 
 use crate::err::ListError;
 
 pub fn send(from: Option<&str>, to: &[&str], message: &[u8]) -> Result<(), Box<dyn Error>> {
-    let mut process = Command::new("sendmail");
+    let cmd = "sendmail";
+    let mut process = Command::new(cmd);
 
     process.stdin(Stdio::piped()).stdout(Stdio::piped());
 
@@ -35,34 +35,41 @@ pub fn send(from: Option<&str>, to: &[&str], message: &[u8]) -> Result<(), Box<d
             }
         }
     }
+    #[cfg(test)]
+    assert!(message.len() > 0);
 
-    let child = process.spawn().map_err(|why| {
-        Box::new(ListError {
-            message: format!("couldn't spawn sendmail: {}", why),
-        })
-    })?;
+    #[cfg(not(test))]
+    {
+        use std::io::{Read, Write};
+        let mut s = String::new();
 
-    child.stdin.unwrap().write_all(message).map_err(|why| {
-        Box::new(ListError {
-            message: format!("couldn't write to sendmail: {}", why),
-        })
-    })?;
-
-    let mut s = String::new();
-    child
-        .stdout
-        .unwrap()
-        .read_to_string(&mut s)
-        .map_err(|why| {
+        let child = process.spawn().map_err(|why| {
             Box::new(ListError {
-                message: format!("couldn't read sendmail output: {}", why),
+                message: format!("couldn't spawn sendmail: {}", why),
             })
         })?;
 
-    if s.len() > 0 {
-        return Err(Box::new(ListError {
-            message: format!("Unexpected response from sendmail: '{}'", s),
-        }));
+        child.stdin.unwrap().write_all(message).map_err(|why| {
+            Box::new(ListError {
+                message: format!("couldn't write to sendmail: {}", why),
+            })
+        })?;
+
+        child
+            .stdout
+            .unwrap()
+            .read_to_string(&mut s)
+            .map_err(|why| {
+                Box::new(ListError {
+                    message: format!("couldn't read sendmail output: {}", why),
+                })
+            })?;
+
+        if s.len() > 0 {
+            return Err(Box::new(ListError {
+                message: format!("Unexpected response from sendmail: '{}'", s),
+            }));
+        }
     }
 
     Ok(())

@@ -4,7 +4,7 @@ use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use fs2::FileExt;
 use maildir::Maildir;
 use mailparse::{addrparse, MailAddr, SingleInfo};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 use std::error::Error;
 use std::fmt;
@@ -22,7 +22,7 @@ pub enum MailingListAction<'a> {
     Reject,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 struct Root {
     config: Config,
 }
@@ -32,7 +32,7 @@ pub struct List {
     config: Config,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
     name: String,
     slug: String,
@@ -52,15 +52,15 @@ impl std::fmt::Debug for List {
 }
 
 impl List {
-    pub fn load(dirname: String) -> Result<List, Box<dyn Error>> {
-        let dir = Path::new(&dirname);
+    pub fn load<P: AsRef<Path>>(dirname: P) -> Result<List, Box<dyn Error>> {
+        let dir = Path::new(dirname.as_ref());
         let config_path = dir.join("config.toml");
         let mut file = File::open(config_path)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         let temp: Root = toml::from_str(&contents)?;
         let list = List {
-            maildir: Maildir::from(dirname),
+            maildir: Maildir::from(dirname.as_ref().to_str().unwrap()),
             config: temp.config,
         };
         Ok(list)
@@ -127,7 +127,7 @@ impl List {
         Ok(())
     }
 
-    pub fn send(&self, message_buf: &[u8]) -> Result<(), Box<dyn Error>> {
+    pub fn send(&self, message_buf: &[u8]) -> Result<String, Box<dyn Error>> {
         self.maildir.create_dirs()?;
 
         let message = mailparse::parse_mail(message_buf)?;
@@ -168,7 +168,17 @@ impl List {
         let message_destinations_filename = Path::new(&self.maildir.path())
             .join("queue")
             .join(format!("{}.dest", id));
-        let subscriptions = File::open(&subscriptions_filename)?;
+        let subscriptions = match OpenOptions::new().read(true).open(&subscriptions_filename) {
+            Ok(subs) => subs,
+            Err(err) => match err.kind() {
+                ErrorKind::NotFound => OpenOptions::new()
+                    .read(true)
+                    .write(true)
+                    .create_new(true)
+                    .open(&subscriptions_filename)?,
+                _ => return Err(Box::new(err)),
+            },
+        };
         subscriptions.lock_shared()?;
         hard_link(&subscriptions_filename, &message_destinations_filename)?;
 
@@ -189,7 +199,7 @@ impl List {
         // println!("Would have started send process here, running inline for now");
         self.dequeue_and_send_message(&id)?;
 
-        Ok(())
+        Ok(id)
     }
 
     fn dequeue_and_send_message(&self, id: &str) -> Result<(), Box<dyn Error>> {
@@ -267,5 +277,68 @@ fn not_found_is_fine(r: Result<(), std::io::Error>) -> Result<(), Box<dyn Error>
         }
     } else {
         return Ok(());
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::{Config, Root};
+    use crate::list::List;
+    use maildir::Maildir;
+    use std::env::temp_dir;
+    use std::error::Error;
+    use std::fs::File;
+    use std::io::Write;
+    use toml;
+
+    #[test]
+    fn test_create_load() -> Result<(), Box<dyn Error>> {
+        let dir = temp_dir();
+        let cf = dir.join("config.toml");
+        let mut config = File::create(cf)?;
+        config.write_all(
+            toml::to_string(&Root {
+                config: Config {
+                    name: "test".to_string(),
+                    slug: "test".to_string(),
+                    open_posting: None,
+                    tag_subject: None,
+                },
+            })?
+            .as_bytes(),
+        )?;
+
+        let list = List::load(dir)?;
+        assert_eq!(list.config.name, "test");
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_send() -> Result<(), Box<dyn Error>> {
+        let dir = temp_dir();
+        let cf = dir.join("config.toml");
+        let mut config = File::create(cf)?;
+        config.write_all(
+            toml::to_string(&Root {
+                config: Config {
+                    name: "test".to_string(),
+                    slug: "test".to_string(),
+                    open_posting: None,
+                    tag_subject: None,
+                },
+            })?
+            .as_bytes(),
+        )?;
+
+        let list = List::load(&dir)?;
+
+        let id = list.send(b"From: test@example.org\r\nSubject: a post\r\n\r\nTest\r\n")?;
+
+        let maildir = Maildir::from(dir);
+
+        maildir.find(&id);
+
+        Ok(())
     }
 }

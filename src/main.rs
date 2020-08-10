@@ -31,7 +31,10 @@ fn handle(mail: &[u8], list: List) -> Result<(), Box<dyn Error>> {
     match action {
         MailingListAction::Subscribe(address) => list.subscribe(address),
         MailingListAction::Unsubscribe(address) => list.unsubscribe(address),
-        MailingListAction::Message(message) => list.send(message),
+        MailingListAction::Message(message) => {
+            list.send(message)?;
+            Ok(())
+        }
         MailingListAction::Reject => Ok(()),
     }
 }
