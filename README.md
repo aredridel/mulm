@@ -78,7 +78,6 @@ welcome. See below.
 ## Future work
 
 - More complete unit tests
-- Add list management headers
 - Parsing HTML parts and reducing them to simple markup only
 - Censoring originating headers for privacy
 - Masking email addresses entirely
