@@ -337,7 +337,7 @@ mod test {
 
         let maildir = Maildir::from(dir);
 
-        maildir.find(&id);
+        maildir.find(&id).unwrap();
 
         Ok(())
     }
