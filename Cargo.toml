@@ -4,7 +4,7 @@ description = "A small mailing list manager for tiny community groups"
 repository = "https://github.com/aredridel/mulm"
 license-file = "LICENSE.md"
 readme = "README.md"
-version = "1.1.0"
+version = "1.1.1"
 authors = ["Aria Stewart <aredridel@dinhe.net>"]
 edition = "2018"
 
