@@ -146,7 +146,19 @@ impl List {
             buf.write_all(b"\r\n")?;
         }
         buf.write_all(b"\r\n")?;
-        buf.write_all(&message.get_body_raw()?)?;
+        if message.subparts.len() > 0{
+            buf.write_all(b"--")?;
+            buf.write_all(message.ctype.params.get("boundary").unwrap().as_bytes())?;
+            for part in message.parts() {
+                buf.write_all(b"\r\n")?;
+                buf.write_all(part.raw_bytes)?;
+                buf.write_all(b"\r\n--")?;
+                buf.write_all(message.ctype.params.get("boundary").unwrap().as_bytes())?;
+            }
+            buf.write_all(b"--\r\n")?;
+        } else {
+            buf.write_all(&message.get_body_raw()?)?;
+        }
 
         let id = self.maildir.store_new(&buf)?;
 
