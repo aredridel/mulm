@@ -100,7 +100,7 @@ mod test {
 
     #[test]
     fn a_bad_email() {
-        let error = action_for_mail(b"bad input\r\n").unwrap_err();
-        assert_eq!(error.to_string(), "Unexpected newline in header key")
+        let reject = action_for_mail(b"bad input\r\n").unwrap();
+        assert_eq!(reject, MailingListAction::Reject);
     }
 }
